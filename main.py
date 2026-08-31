@@ -2,11 +2,19 @@ import json
 import time
 import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 import redis.asyncio as redis
 import clickhouse_connect
 from pyexpat.errors import messages
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 ch_client = clickhouse_connect.get_client(host='localhost', port=8123, password='1234')
