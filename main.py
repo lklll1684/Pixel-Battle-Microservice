@@ -1,6 +1,7 @@
 import json
 import time
 import asyncio
+import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 import redis.asyncio as redis
@@ -15,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+CLICKHOUSE_HOST = os.getenv("CLICKHOUSE_HOST", "localhost")
 
 r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 ch_client = clickhouse_connect.get_client(host='localhost', port=8123, password='1234')
