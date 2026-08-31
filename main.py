@@ -1,20 +1,25 @@
 import json
 import time
+import asyncio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 import redis.asyncio as redis
 from pyexpat.errors import messages
 
 app = FastAPI()
 
-r = redis.Redis(host='localhost', port=6379, db=, decode_responses=True)
+r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
 
 WIDTH = 100
 HEIGHT = 100
-COLLDOWN = 30
+COOLDOWN = 30
+
+@app.get("/")
+async def root():
+    return {"message": "Сервер запущен, стучись в /ws через вебсокеты"}
 
 @app.on_event("startup")
-async def startup():
-    print("Сервер запущен")
+async def startup_event():
+    asyncio.create_task(redis_listener())
 
 
 class ConnectionManager:
@@ -46,17 +51,16 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             data = await websocket.receive_text()
             payload = json.loads(data)
-            user_id = payload.get["user_id"]
-            x = payload.get["x"]
-            y = payload.get["y"]
-            color = payload.get["color"]
-            last_time = await r.get(f"user: {user_id}:cd")
-            current_time = time.time()
-            if last_time and (current_time - float(last_time)) > COLLDOWN:
-                await websocket.send_text(json.dumps({"error": "Кулдаун еще не прошел"}))
+            user_id = payload.get("user_id") or payload.get("user")
+            x = payload.get("x")
+            y = payload.get("y")
+            color = payload.get("color")
+            if not user_id:
                 continue
-
-            await r.set(f"user: {user_id}:cd", current_time)
+            if await r.exists(f"user:{user_id}:cd"):
+                await websocket.send_text(json.dumps({"error":"Кулдаун еще не прошел"},ensure_ascii=False))
+                continue
+            await r.set(f"user:{user_id}:cd", "1", ex=COOLDOWN)
             pixel_index = y * WIDTH + x
             await r.hset("canvas", pixel_index, color)
             event = json.dumps({"x": x, "y": y, "color": color, "user": user_id})

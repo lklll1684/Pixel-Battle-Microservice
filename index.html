@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pixel Battle Test</title>
+</head>
+<body>
+    <h1>Пиксель-Батл Тест</h1>
+    <button onclick="sendPixel()">Тыкнуть пиксель!</button>
+    <div id="log" style="margin-top: 20px; font-family: monospace;"></div>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8000/ws');
+        const logDiv = document.getElementById('log');
+
+        ws.onopen = () => {
+            logDiv.innerHTML += '<p style="color: green;">✅ Подключено к WebSocket!</p>';
+        };
+
+        ws.onmessage = (event) => {
+            logDiv.innerHTML += `<p>📩 Ответ от сервера: ${event.data}</p>`;
+        };
+
+        ws.onerror = (error) => {
+            logDiv.innerHTML += '<p style="color: red;">❌ Ошибка сокета!</p>';
+        };
+
+        function sendPixel() {
+            const data = {
+                user_id: "user_1337",
+                x: Math.floor(Math.random() * 100),
+                y: Math.floor(Math.random() * 100),
+                color: "#FF0000"
+            };
+            ws.send(JSON.stringify(data));
+            logDiv.innerHTML += `<p>📤 Отправили пиксель: x=${data.x}, y=${data.y}</p>`;
+        }
+    </script>
+</body>
+</html>
