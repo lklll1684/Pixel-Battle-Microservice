@@ -11,15 +11,16 @@ services:
       - redis
       - clickhouse
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     ports:
       - "6379:6379"
   clickhouse:
-    image: clickhouse/clickhouse-server
+    image: clickhouse/clickhouse-server:latest
     ports:
       - "8123:8123"
       - "9000:9000"
     environment:
+      - CLICKHOUSE_USER=default
       - CLICKHOUSE_PASSWORD=1234
     ulimits:
       nofile:
