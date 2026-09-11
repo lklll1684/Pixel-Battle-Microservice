@@ -16,11 +16,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-CLICKHOUSE_HOST = os.getenv("CLICKHOUSE_HOST", "localhost")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+CLICKHOUSE_HOST = os.getenv("CLICKHOUSE_HOST", "clickhouse")
 
-r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-ch_client = clickhouse_connect.get_client(host='localhost', port=8123, password='1234')
+r = redis.Redis(host='REDIS_HOST', port=6379, db=0, decode_responses=True)
+ch_client = clickhouse_connect.get_client(host='CLICKHOUSE_HOST', port=8123, password='1234')
 WIDTH = 100
 HEIGHT = 100
 COOLDOWN = 30
